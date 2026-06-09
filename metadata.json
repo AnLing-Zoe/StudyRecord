@@ -1,0 +1,6 @@
+{
+  "name": "Study Tracker",
+  "description": "Study hour tracker, monthly planner, and exam countdown integrated with Google Sheets",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

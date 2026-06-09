@@ -246,29 +246,29 @@ export default function App() {
   const daysLeft = getExamCountdown();
 
   return (
-    <div className="min-h-screen bg-natural-bg font-sans text-natural-text flex flex-col items-center justify-center py-6 px-4 md:py-10" id="study-app-wrapper">
+    <div className="min-h-screen bg-natural-bg font-sans text-natural-text flex flex-col items-center justify-center py-0 px-0 md:py-10 md:px-4" id="study-app-wrapper">
       
       {/* Visual mobile app chassis wrapper */}
       <div 
-        className="relative max-w-[465px] w-full min-h-[860px] bg-natural-card border border-natural-border rounded-[38px] shadow-lg flex flex-col overflow-hidden"
+        className="relative w-full max-w-full md:max-w-[465px] h-screen md:h-[860px] bg-natural-card border-0 md:border border-natural-border rounded-none md:rounded-[38px] shadow-none md:shadow-lg flex flex-col overflow-hidden"
         id="applet-frame"
       >
         {/* Notch container */}
-        <div className="absolute top-0 inset-x-0 h-6 bg-natural-light border-b border-natural-border/30 flex items-center justify-center z-45" id="frame-speaker-notch">
+        <div className="hidden md:flex absolute top-0 inset-x-0 h-6 bg-natural-light border-b border-natural-border/30 items-center justify-center z-45" id="frame-speaker-notch">
           <div className="w-24 h-2.5 bg-natural-border/60 rounded-b-md" />
         </div>
 
         {/* Header toolbar */}
-        <header className="bg-natural-light pt-8 pb-4 px-6 flex items-center justify-between border-b border-natural-border" id="applet-header">
+        <header className="bg-natural-light pt-4 md:pt-8 pb-4 px-6 flex items-center justify-between border-b border-natural-border" id="applet-header">
           <div className="flex items-center space-x-2">
             <div className="bg-natural-primary/10 text-natural-primary p-1.5 rounded-xl border border-natural-primary/15">
               <BrainCircuit className="w-4 h-4" />
             </div>
             <div>
               <h1 className="text-xl font-serif italic text-natural-primary">
-                Studia
+                Studio
               </h1>
-              <span className="text-[9px] text-natural-text/60 block -mt-0.5 font-bold uppercase tracking-widest">Your Quiet Space</span>
+              <span className="text-[9px] text-natural-text/60 block -mt-0.5 font-bold uppercase tracking-widest">讀好書，上好學</span>
             </div>
           </div>
 
@@ -343,7 +343,7 @@ export default function App() {
         )}
 
         {/* Bottom Tab Layout Frame */}
-        <footer className="absolute bottom-0 inset-x-0 bg-natural-light/95 backdrop-blur-md border-t border-natural-border px-4 py-3 pb-5 flex justify-around items-center z-40 rounded-b-[38px] shadow-sm" id="tabbar-root">
+        <footer className="absolute bottom-0 inset-x-0 bg-natural-light/95 backdrop-blur-md border-t border-natural-border px-4 py-3 pb-5 flex justify-around items-center z-40 rounded-none md:rounded-b-[38px] shadow-sm" id="tabbar-root">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`flex flex-col items-center space-y-1 transition-all cursor-pointer ${
@@ -352,7 +352,7 @@ export default function App() {
             id="tab-btn-dashboard"
           >
             <Home className="w-5 h-5" />
-            <span className="text-[10px]">時數儀表</span>
+            <span className="text-[10px]">儀錶板</span>
           </button>
 
           <button
@@ -363,7 +363,7 @@ export default function App() {
             id="tab-btn-timer"
           >
             <Clock className="w-5 h-5" />
-            <span className="text-[10px]">計時防怠</span>
+            <span className="text-[10px]">番茄鐘</span>
           </button>
 
           <button
@@ -374,7 +374,7 @@ export default function App() {
             id="tab-btn-planner"
           >
             <Calendar className="w-5 h-5" />
-            <span className="text-[10px]">計畫倒數</span>
+            <span className="text-[10px]">To-Day</span>
           </button>
         </footer>
       </div>

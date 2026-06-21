@@ -438,7 +438,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
             type="submit"
             className="w-full bg-natural-primary hover:bg-natural-primary/95 active:scale-[0.98] transition-all text-white font-semibold py-3 rounded-2xl flex items-center justify-center space-x-1.5 cursor-pointer shadow-sm"
           >
-            <span>將此記錄存入 Sheets</span>
+            <span>儲存此筆紀錄</span>
           </button>
         </form>
       )}

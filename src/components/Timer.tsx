@@ -45,59 +45,111 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
   // Refs for timers
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const elapsedAtStartRef = useRef<number>(0);
+  const targetEndTimeRef = useRef<number | null>(null);
+  const wakeLockRef = useRef<any>(null);
 
   const subjectsPool = ['國文', '英文', '數學', '物理', '化學', '生物', '歷史', '地理', '程式設計', '專業科目', '其他'];
 
-  // Handle Tick
+  const playAlertSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+      osc.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.8);
+    } catch (e) {
+      console.log('Audio contextual alert failed');
+    }
+  };
+
+  const requestWakeLock = async () => {
+    try {
+      if ('wakeLock' in navigator && !wakeLockRef.current) {
+        wakeLockRef.current = await (navigator.wakeLock as any).request('screen');
+      }
+    } catch (err) {
+      console.log('Wake Lock request failed:', err);
+    }
+  };
+
+  const releaseWakeLock = async () => {
+    try {
+      if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+      }
+    } catch (err) {
+      console.log('Wake Lock release failed:', err);
+    }
+  };
+
+  // Handle Tick and Wake Lock
   useEffect(() => {
     if (isPlaying) {
-      intervalRef.current = setInterval(() => {
-        if (timerMode === 'stopwatch') {
-          setElapsedTime((prev) => prev + 1);
-        } else {
-          setPomoTimeLeft((prev) => {
-            if (prev <= 1) {
-              // Pomodoro finishes!
-              setIsPlaying(false);
-              if (intervalRef.current) clearInterval(intervalRef.current);
-              
-              // Trigger finished alarm with audio
-              try {
-                const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
-                osc.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.8);
-              } catch (e) {
-                console.log('Audio contextual alert failed');
-              }
-
-              alert('🍅 番茄鐘時間到！辛苦了，休息一下吧！');
-              // Auto trigger logging for the 25 minutes
-              triggerSaveDialogue(pomoMinutes);
-              return pomoMinutes * 60;
-            }
-            return prev - 1;
-          });
-        }
-      }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      // Setup initial timestamps
+      if (timerMode === 'stopwatch') {
+        startTimeRef.current = Date.now();
+        elapsedAtStartRef.current = elapsedTime;
+      } else {
+        targetEndTimeRef.current = Date.now() + pomoTimeLeft * 1000;
       }
-    }
 
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+      requestWakeLock();
+
+      const updateClocks = () => {
+        if (timerMode === 'stopwatch') {
+          if (startTimeRef.current !== null) {
+            const secondsPassed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+            setElapsedTime(elapsedAtStartRef.current + secondsPassed);
+          }
+        } else {
+          if (targetEndTimeRef.current !== null) {
+            const timeLeft = Math.max(0, Math.round((targetEndTimeRef.current - Date.now()) / 1000));
+            setPomoTimeLeft(timeLeft);
+
+            if (timeLeft <= 0) {
+              setIsPlaying(false);
+              releaseWakeLock();
+              playAlertSound();
+              alert('🍅 番茄鐘時間到！辛苦了，休息一下吧！');
+              triggerSaveDialogue(pomoMinutes);
+              setPomoTimeLeft(pomoMinutes * 60);
+            }
+          }
+        }
+      };
+
+      // Also listen to visibility changes to sync clocks instantly and re-acquire wake lock
+      const handleVisibilityChangeSync = () => {
+        if (document.visibilityState === 'visible') {
+          updateClocks();
+          requestWakeLock();
+        }
+      };
+      document.addEventListener('visibilitychange', handleVisibilityChangeSync);
+
+      intervalRef.current = setInterval(updateClocks, 500); // Check every 500ms for more precision
+
+      return () => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        document.removeEventListener('visibilitychange', handleVisibilityChangeSync);
+      };
+    } else {
+      releaseWakeLock();
+      startTimeRef.current = null;
+      targetEndTimeRef.current = null;
+    }
   }, [isPlaying, timerMode, pomoMinutes]);
 
   // Clean-up on unmount
   useEffect(() => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      releaseWakeLock();
     };
   }, []);
 

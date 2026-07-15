@@ -141,7 +141,7 @@ export default function App() {
           <div className="w-24 h-2.5 bg-natural-border/60 rounded-b-md" />
         </div>
 
-        <header className="bg-natural-light pt-4 md:pt-8 pb-4 px-6 flex items-center justify-between border-b border-natural-border" id="applet-header">
+        <header className="pt-4 md:pt-8 pb-4 px-6 flex items-center justify-between" id="applet-header">
           <div className="flex items-center space-x-2">
             <div className="bg-natural-primary/10 text-natural-primary p-1.5 rounded-xl border border-natural-primary/15">
               <BrainCircuit className="w-4 h-4" />
@@ -156,7 +156,7 @@ export default function App() {
 
         <main className="flex-1 overflow-y-auto px-5.5 py-5 no-scrollbar bg-natural-card pb-24" id="view-viewport">
           {activeTab === 'dashboard' && (
-            <div className="space-y-5 animate-fade-in" id="dashboard-tab">
+            <div className="space-y-5 animate-view" id="dashboard-tab">
               <Stats logs={appState.logs} onDeleteLog={handleDeleteLog} />
             </div>
           )}
@@ -166,7 +166,7 @@ export default function App() {
           )}
 
           {activeTab === 'planner' && (
-            <div className="flex flex-col space-y-6 bg-natural-card" id="planner-tab">
+            <div className="flex flex-col space-y-6 bg-natural-card animate-view" id="planner-tab">
               <Countdown
                 exams={appState.exams}
                 onAddExam={handleAddExam}
@@ -179,7 +179,7 @@ export default function App() {
         </main>
 
         {toastMessage && (
-          <div className="absolute top-18 inset-x-5 z-50 flex justify-center pointer-events-none animate-slide-up" id="global-toast">
+          <div className="absolute top-18 inset-x-5 z-50 flex justify-center pointer-events-none toast-enter" id="global-toast" role="status" aria-live="polite">
             <div
               className={`px-4 py-2.5 rounded-full shadow-md border text-xs flex items-center space-x-2 ${
                 toastType === 'success'
@@ -195,13 +195,14 @@ export default function App() {
           </div>
         )}
 
-        <footer className="absolute bottom-0 inset-x-0 bg-natural-light/95 backdrop-blur-md border-t border-natural-border px-4 py-3 pb-5 flex justify-around items-center z-40 rounded-none md:rounded-b-[38px] shadow-sm" id="tabbar-root">
+        <footer className="absolute bottom-0 inset-x-0 px-4 py-3 pb-5 flex justify-around items-center z-40 rounded-none md:rounded-b-[38px]" id="tabbar-root" aria-label="主要導覽">
           <button
             onClick={() => setActiveTab('dashboard')}
-            className={`flex flex-col items-center space-y-1 transition-all cursor-pointer ${
+            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
               activeTab === 'dashboard' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
             }`}
             id="tab-btn-dashboard"
+            aria-current={activeTab === 'dashboard' ? 'page' : undefined}
           >
             <Home className="w-5 h-5" />
             <span className="text-[10px]">Home</span>
@@ -209,10 +210,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('timer')}
-            className={`flex flex-col items-center space-y-1 transition-all cursor-pointer ${
+            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
               activeTab === 'timer' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
             }`}
             id="tab-btn-timer"
+            aria-current={activeTab === 'timer' ? 'page' : undefined}
           >
             <Clock className="w-5 h-5" />
             <span className="text-[10px]">Timer</span>
@@ -220,10 +222,11 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab('planner')}
-            className={`flex flex-col items-center space-y-1 transition-all cursor-pointer ${
+            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
               activeTab === 'planner' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
             }`}
             id="tab-btn-planner"
+            aria-current={activeTab === 'planner' ? 'page' : undefined}
           >
             <Calendar className="w-5 h-5" />
             <span className="text-[10px]">Plan</span>

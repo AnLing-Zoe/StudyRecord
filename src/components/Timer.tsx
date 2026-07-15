@@ -239,12 +239,12 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
   };
 
   return (
-    <div className="flex flex-col space-y-4 animate-fade-in text-sm text-natural-text" id="timer-screen">
+    <div className="flex flex-col space-y-4 animate-view text-sm text-natural-text" id="timer-screen">
       {/* Selector: Live timer vs Manual logger */}
       <div className="flex p-1 bg-natural-light border border-natural-border rounded-2xl" id="timer-toggle-bar">
         <button
           onClick={() => setIsManualMode(false)}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-ui cursor-pointer ${
             !isManualMode ? 'bg-natural-primary text-white shadow-sm' : 'text-natural-text/50 hover:text-natural-primary'
           }`}
         >
@@ -253,7 +253,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
         </button>
         <button
           onClick={() => setIsManualMode(true)}
-          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all cursor-pointer ${
+          className={`flex-1 py-2 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5 transition-ui cursor-pointer ${
             isManualMode ? 'bg-natural-primary text-white shadow-sm' : 'text-natural-text/50 hover:text-natural-primary'
           }`}
         >
@@ -274,7 +274,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                   setIsPlaying(false);
                   setTimerMode('stopwatch');
                 }}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg font-medium transition-ui cursor-pointer ${
                   timerMode === 'stopwatch' ? 'bg-white text-natural-primary border border-natural-border shadow-sm' : 'text-natural-text/55'
                 }`}
               >
@@ -286,7 +286,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                   setTimerMode('pomodoro');
                   setPomoTimeLeft(pomoMinutes * 60);
                 }}
-                className={`px-3.5 py-1.5 rounded-lg font-medium transition-all cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg font-medium transition-ui cursor-pointer ${
                   timerMode === 'pomodoro' ? 'bg-white text-natural-primary border border-natural-border shadow-sm' : 'text-natural-text/55'
                 }`}
               >
@@ -296,7 +296,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
             {/* Glowing Big Timer Output */}
             <div className="relative py-4 flex items-center justify-center min-h-[140px]" id="timer-digits-wrapper">
-              <div className="text-5xl font-black font-serif tracking-wider tabular-nums text-natural-primary animate-pulse">
+              <div className="text-5xl font-black font-serif tracking-tight tabular-nums text-natural-primary">
                 {timerMode === 'stopwatch' ? formatTimeStr(elapsedTime) : formatTimeStr(pomoTimeLeft)}
               </div>
             </div>
@@ -312,7 +312,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                   <button
                     key={sub}
                     onClick={() => setActiveSubject(sub)}
-                    className={`py-1.5 rounded-xl text-xs font-semibold border transition-all truncate cursor-pointer ${
+                    className={`py-1.5 rounded-xl text-xs font-semibold border transition-ui truncate cursor-pointer ${
                       activeSubject === sub 
                         ? 'bg-natural-primary border-natural-primary text-white shadow-md' 
                         : 'bg-natural-bg border-natural-border text-natural-text/70 hover:border-natural-border'
@@ -327,7 +327,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
               <div className="flex gap-2">
                 <button
                   onClick={() => setActiveSubject('其他')}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-ui cursor-pointer ${
                     activeSubject === '其他' 
                       ? 'bg-natural-primary border-natural-primary text-white shadow-md' 
                       : 'bg-natural-bg border-natural-border text-natural-text/70'
@@ -368,7 +368,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
             <div className="flex items-center justify-center space-x-4 w-full pt-2">
               <button
                 onClick={handleReset}
-                className="p-3 bg-natural-bg hover:bg-natural-light text-natural-text/50 hover:text-natural-text border border-natural-border rounded-full transition-all active:scale-95 cursor-pointer"
+                className="p-3 bg-natural-bg hover:bg-natural-light text-natural-text/50 hover:text-natural-text border border-natural-border rounded-full transition-ui cursor-pointer"
                 title="歸零"
                 id="timer-reset-btn"
               >
@@ -377,7 +377,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
               <button
                 onClick={handleStartPause}
-                className={`p-5 rounded-full transition-all active:scale-95 shadow-md cursor-pointer ${
+                className={`p-5 rounded-full transition-ui shadow-md cursor-pointer ${
                   isPlaying 
                     ? 'bg-natural-secondary text-white hover:bg-natural-secondary/90' 
                     : 'bg-natural-primary text-white hover:bg-natural-primary/95'
@@ -392,7 +392,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                 <button
                   onClick={handleStopwatchSave}
                   disabled={elapsedTime < 5}
-                  className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 disabled:opacity-40 disabled:bg-natural-bg disabled:text-natural-text/40 rounded-full transition-all active:scale-95 cursor-pointer"
+                  className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 disabled:opacity-40 disabled:bg-natural-bg disabled:text-natural-text/40 rounded-full transition-ui cursor-pointer"
                   title="存檔此研讀段落"
                   id="timer-save-btn"
                 >
@@ -401,7 +401,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
               ) : (
                 <button
                   onClick={() => triggerSaveDialogue(25)}
-                  className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 rounded-full transition-all active:scale-95 cursor-pointer"
+                  className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 rounded-full transition-ui cursor-pointer"
                   title="將蕃茄鐘存入記錄"
                   id="pomo-save-btn"
                 >
@@ -413,7 +413,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
         </div>
       ) : (
         /* MANUAL LOG ENTRY MODULE */
-        <form onSubmit={handleManualSubmit} className="bg-white border border-natural-border p-5 rounded-[32px] space-y-4 animate-slide-up shadow-sm" id="manual-form">
+        <form onSubmit={handleManualSubmit} className="bg-white border border-natural-border p-5 rounded-[32px] space-y-4 surface-enter shadow-sm" id="manual-form">
           <h3 className="font-semibold text-natural-text font-serif">手動建立讀書紀錄</h3>
 
           <div className="space-y-3.5">
@@ -488,7 +488,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
           <button
             type="submit"
-            className="w-full bg-natural-primary hover:bg-natural-primary/95 active:scale-[0.98] transition-all text-white font-semibold py-3 rounded-2xl flex items-center justify-center space-x-1.5 cursor-pointer shadow-sm"
+            className="w-full bg-natural-primary hover:bg-natural-primary/95 transition-ui text-white font-semibold py-3 rounded-2xl flex items-center justify-center space-x-1.5 cursor-pointer shadow-sm"
           >
             <span>儲存此筆紀錄</span>
           </button>
@@ -497,10 +497,10 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
       {/* SAVE RECORD NOTE MODAL */}
       {showSaveModal && (
-        <div className="fixed inset-0 bg-[#4a4a40]/30 backdrop-blur-sm flex items-center justify-center p-5 z-50 animate-fade-in" id="save-log-modal">
+        <div className="fixed inset-0 bg-[#4a4a40]/30 backdrop-blur-sm flex items-center justify-center p-5 z-50 scrim-enter" id="save-log-modal">
           <form 
             onSubmit={handleSaveModalSubmit}
-            className="bg-white border border-natural-border p-6 rounded-[32px] w-full max-w-[380px] space-y-4 shadow-2xl animate-scale-up text-left"
+            className="bg-white border border-natural-border p-6 rounded-[32px] w-full max-w-[380px] space-y-4 shadow-2xl modal-enter text-left"
           >
             <div className="flex items-center space-x-2 text-natural-primary font-bold text-base mb-1 font-serif">
               <CheckCircle className="w-5 h-5" />
@@ -527,13 +527,13 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
               <button
                 type="button"
                 onClick={() => setShowSaveModal(false)}
-                className="flex-1 bg-white hover:bg-neutral-50 border border-natural-border text-natural-text/70 py-3 rounded-2xl text-xs transition-all cursor-pointer"
+                className="flex-1 bg-white hover:bg-neutral-50 border border-natural-border text-natural-text/70 py-3 rounded-2xl text-xs transition-ui cursor-pointer"
               >
                 放棄研讀
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-3 rounded-2xl text-xs font-bold transition-all active:scale-95 cursor-pointer shadow-sm"
+                className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-3 rounded-2xl text-xs font-bold transition-ui cursor-pointer shadow-sm"
               >
                 確保留存
               </button>

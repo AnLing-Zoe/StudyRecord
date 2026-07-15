@@ -92,7 +92,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
   const recentLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
 
   return (
-    <div className="flex flex-col space-y-4.5 animate-fade-in text-sm text-natural-text" id="stats-dashboard">
+    <div className="flex flex-col space-y-4.5 text-sm text-natural-text" id="stats-dashboard">
       
       {/* Visual BENTO Grid: General recap stats */}
       <div className="grid grid-cols-3 gap-2.5" id="bento-recap">
@@ -121,7 +121,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
         </div>
 
         <div className="w-full h-[180px] font-sans text-xs" id="trend-chart-viewport">
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 350, height: 180 }}>
             <BarChart data={trendData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0e8" vertical={false} />
               <XAxis dataKey="label" stroke="#a3a39e" tickLine={false} style={{ fontSize: '10px' }} />
@@ -161,7 +161,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
                   </div>
                   <div className="w-full bg-natural-bg h-2 rounded-full overflow-hidden">
                     <div 
-                      className={`h-full rounded-full transition-all duration-300 ${
+                      className={`h-full rounded-full transition-[width] duration-200 ${
                         idx === 0 ? 'bg-natural-primary' : 'bg-natural-secondary/70'
                       }`}
                       style={{ width: `${rectPercent}%` }}
@@ -210,7 +210,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
 
                 <button
                   onClick={() => handleDeleteLog(log.id, log.subject, log.duration)}
-                  className="p-1.5 text-natural-text/40 hover:text-red-600 hover:bg-neutral-100 rounded-lg transition-all cursor-pointer flex-shrink-0"
+                  className="p-1.5 text-natural-text/40 hover:text-red-600 hover:bg-neutral-100 rounded-lg transition-ui cursor-pointer flex-shrink-0"
                   title="刪除"
                   id={`delete-log-${log.id}`}
                 >

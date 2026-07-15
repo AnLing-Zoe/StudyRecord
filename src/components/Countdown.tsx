@@ -101,13 +101,13 @@ export default function Countdown({
   const pinnedExams = sortedExams.filter(exam => exam.pinned);
 
   return (
-    <div className="flex flex-col space-y-5 animate-fade-in text-sm text-natural-text" id="countdown-manager">
+    <div className="flex flex-col space-y-5 text-sm text-natural-text" id="countdown-manager">
       
       {/* Target Countdowns ("目標倒數") Pinned cards display */}
       <div className="space-y-3" id="target-countdowns-area">
         <div className="flex items-center justify-between">
           <h3 className="font-serif font-bold text-natural-text text-sm flex items-center space-x-1.5">
-            <Pin className="w-4 h-4 text-natural-primary fill-natural-primary animate-pulse" />
+            <Pin className="w-4 h-4 text-natural-primary fill-natural-primary" />
             <span>目標倒數 ({pinnedExams.length})</span>
           </h3>
           {pinnedExams.length > 0 && (
@@ -154,7 +154,7 @@ export default function Countdown({
               return (
                 <div 
                   key={`pinned-${exam.id}`} 
-                  className={`relative p-5 rounded-3xl overflow-hidden shadow-sm transition-all hover:scale-[1.01] ${themeClass}`}
+                  className={`exam-card relative p-5 rounded-3xl overflow-hidden shadow-sm ${themeClass}`}
                 >
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                     <Clock className="w-16 h-16" />
@@ -180,7 +180,7 @@ export default function Countdown({
 
                     <button
                       onClick={() => onUpdateExam({ ...exam, pinned: false })}
-                      className="text-white/60 hover:text-white p-1.5 hover:bg-white/10 rounded-xl transition-all absolute top-3.5 right-3.5 cursor-pointer"
+                      className="text-white/60 hover:text-white p-1.5 hover:bg-white/10 rounded-xl transition-ui absolute top-3.5 right-3.5 cursor-pointer"
                       title="取消掛置"
                     >
                       <Pin className="w-3.5 h-3.5 fill-current text-current" />
@@ -212,7 +212,7 @@ export default function Countdown({
         {!isAdding && (
           <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center space-x-1 bg-natural-primary hover:bg-natural-primary/95 text-white font-medium px-4 py-1.5 rounded-2xl text-xs active:scale-95 transition-all cursor-pointer shadow-sm"
+            className="flex items-center space-x-1 bg-natural-primary hover:bg-natural-primary/95 text-white font-medium px-4 py-1.5 rounded-2xl text-xs transition-ui cursor-pointer shadow-sm"
             id="add-exam-mode-btn"
           >
             <Plus className="w-3.5 h-3.5" />
@@ -223,7 +223,7 @@ export default function Countdown({
 
       {/* Add exam form */}
       {isAdding && (
-        <form onSubmit={handleCreate} className="bg-white border border-natural-border p-5 rounded-3xl space-y-4 animate-slide-up shadow-sm" id="add-exam-form">
+        <form onSubmit={handleCreate} className="bg-white border border-natural-border p-5 rounded-3xl space-y-4 surface-enter shadow-sm" id="add-exam-form">
           <div className="space-y-3.5">
             <div>
               <label className="block text-xs font-semibold text-natural-text/70 mb-1.5">考試名稱</label>
@@ -265,13 +265,13 @@ export default function Countdown({
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="flex-1 bg-white hover:bg-neutral-50 text-natural-text/70 border border-natural-border py-2.5 rounded-2xl text-xs transition-all cursor-pointer"
+              className="flex-1 bg-white hover:bg-neutral-50 text-natural-text/70 border border-natural-border py-2.5 rounded-2xl text-xs transition-ui cursor-pointer"
             >
               取消
             </button>
             <button
               type="submit"
-              className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-2.5 rounded-2xl text-xs font-semibold transition-all active:scale-95 cursor-pointer shadow-sm"
+              className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-2.5 rounded-2xl text-xs font-semibold transition-ui cursor-pointer shadow-sm"
             >
               建立並新增
             </button>
@@ -302,7 +302,7 @@ export default function Countdown({
               return (
                 <div 
                   key={exam.id}
-                  className="bg-white border-2 border-natural-primary/30 p-4.5 rounded-3xl space-y-4 shadow-md animate-fade-in"
+                  className="bg-white border-2 border-natural-primary/30 p-4.5 rounded-3xl space-y-4 shadow-md surface-enter"
                   id={`edit-form-wrap-${exam.id}`}
                 >
                   <div className="space-y-3">
@@ -344,14 +344,14 @@ export default function Countdown({
                     <button
                       type="button"
                       onClick={() => setEditingExamId(null)}
-                      className="flex-1 bg-white hover:bg-neutral-50 text-natural-text/70 border border-natural-border py-2 rounded-xl text-xs font-medium cursor-pointer transition-all"
+                      className="flex-1 bg-white hover:bg-neutral-50 text-natural-text/70 border border-natural-border py-2 rounded-xl text-xs font-medium cursor-pointer transition-ui"
                     >
                       取消
                     </button>
                     <button
                       type="button"
                       onClick={() => handleUpdateSave(exam.id)}
-                      className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition-all"
+                      className="flex-1 bg-natural-primary hover:bg-natural-primary/95 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer shadow-sm transition-ui"
                     >
                       儲存修改
                     </button>
@@ -363,13 +363,13 @@ export default function Countdown({
             return (
               <div 
                 key={exam.id}
-                className={`bg-natural-light border border-natural-border p-4 rounded-3xl flex items-center justify-between transition-all hover:bg-natural-light/80 shadow-sm ${
+                className={`bg-natural-light border border-natural-border p-4 rounded-3xl flex items-center justify-between transition-colors duration-150 hover:bg-natural-light/80 shadow-sm ${
                   exam.pinned ? 'ring-1 ring-natural-primary/30 bg-white/70' : ''
                 }`}
               >
                 <div className="flex-1 min-w-0 pr-3">
                   <div className="flex items-center space-x-2">
-                    {exam.pinned && <Pin className="w-3.5 h-3.5 text-natural-primary fill-natural-primary flex-shrink-0 animate-pulse" />}
+                    {exam.pinned && <Pin className="w-3.5 h-3.5 text-natural-primary fill-natural-primary flex-shrink-0" />}
                     <h4 className="font-semibold text-natural-text font-serif truncate">{exam.name}</h4>
                   </div>
                   <p className="text-[11px] text-natural-text/50 flex items-center space-x-1 mt-1">
@@ -386,7 +386,7 @@ export default function Countdown({
                   {/* Pin/Unpin rapid action button */}
                   <button
                     onClick={() => onUpdateExam({ ...exam, pinned: !exam.pinned })}
-                    className={`p-2 border rounded-xl active:scale-95 transition-all cursor-pointer shadow-sm ${
+                    className={`p-2 border rounded-xl transition-ui cursor-pointer shadow-sm ${
                       exam.pinned 
                         ? 'bg-natural-primary/10 border-natural-primary/25 text-natural-primary' 
                         : 'bg-white border-natural-border text-natural-text/45 hover:text-natural-primary hover:bg-natural-light/50'
@@ -400,7 +400,7 @@ export default function Countdown({
                   {/* Edit action button */}
                   <button
                     onClick={() => handleStartEdit(exam)}
-                    className="p-2 bg-white border border-natural-border text-natural-text/45 hover:text-natural-primary hover:bg-neutral-50 rounded-xl active:scale-95 transition-all cursor-pointer shadow-sm"
+                    className="p-2 bg-white border border-natural-border text-natural-text/45 hover:text-natural-primary hover:bg-neutral-50 rounded-xl transition-ui cursor-pointer shadow-sm"
                     title="編輯考程"
                     id={`edit-trigger-${exam.id}`}
                   >
@@ -410,7 +410,7 @@ export default function Countdown({
                   {/* Delete button */}
                   <button
                     onClick={() => handleDelete(exam.id, exam.name)}
-                    className="p-2 bg-white border border-natural-border text-natural-text/50 hover:text-red-500 hover:bg-red-50 rounded-xl active:scale-95 transition-all cursor-pointer shadow-sm"
+                    className="p-2 bg-white border border-natural-border text-natural-text/50 hover:text-red-500 hover:bg-red-50 rounded-xl transition-ui cursor-pointer shadow-sm"
                     title="刪除"
                     id={`delete-exam-${exam.id}`}
                   >

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Exam } from '../types';
+import { daysUntil } from '../date';
 import { 
   Calendar, 
   Trash2,   
@@ -36,13 +37,7 @@ export default function Countdown({
 
   // Helper to calculate days remaining
   const getDaysRemaining = (dateString: string): number => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const target = new Date(dateString);
-    target.setHours(0, 0, 0, 0);
-
-    const diffTime = target.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return daysUntil(dateString);
   };
 
   const handleCreate = (e: React.FormEvent) => {
@@ -182,6 +177,7 @@ export default function Countdown({
                       onClick={() => onUpdateExam({ ...exam, pinned: false })}
                       className="text-white/60 hover:text-white p-1.5 hover:bg-white/10 rounded-xl transition-ui absolute top-3.5 right-3.5 cursor-pointer"
                       title="取消掛置"
+                      aria-label={`取消掛置「${exam.name}」`}
                     >
                       <Pin className="w-3.5 h-3.5 fill-current text-current" />
                     </button>
@@ -392,6 +388,7 @@ export default function Countdown({
                         : 'bg-white border-natural-border text-natural-text/45 hover:text-natural-primary hover:bg-natural-light/50'
                     }`}
                     title={exam.pinned ? '取消上方掛置' : '掛置到上方目標倒數'}
+                    aria-label={exam.pinned ? `取消掛置「${exam.name}」` : `掛置「${exam.name}」`}
                     id={`pin-toggle-${exam.id}`}
                   >
                     <Pin className={`w-3.5 h-3.5 ${exam.pinned ? 'fill-natural-primary' : ''}`} />
@@ -402,6 +399,7 @@ export default function Countdown({
                     onClick={() => handleStartEdit(exam)}
                     className="p-2 bg-white border border-natural-border text-natural-text/45 hover:text-natural-primary hover:bg-neutral-50 rounded-xl transition-ui cursor-pointer shadow-sm"
                     title="編輯考程"
+                    aria-label={`編輯「${exam.name}」`}
                     id={`edit-trigger-${exam.id}`}
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -412,6 +410,7 @@ export default function Countdown({
                     onClick={() => handleDelete(exam.id, exam.name)}
                     className="p-2 bg-white border border-natural-border text-natural-text/50 hover:text-red-500 hover:bg-red-50 rounded-xl transition-ui cursor-pointer shadow-sm"
                     title="刪除"
+                    aria-label={`刪除「${exam.name}」`}
                     id={`delete-exam-${exam.id}`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />

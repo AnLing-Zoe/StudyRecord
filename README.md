@@ -37,6 +37,7 @@ npm run dev
 ```bash
 npm run dev      # 啟動開發伺服器
 npm run lint     # 執行 TypeScript 型別檢查
+npm test         # 執行日期工具測試
 npm run build    # 建立 production 版本至 dist/
 npm run preview  # 預覽 production build
 ```
@@ -53,5 +54,6 @@ Screen Wake Lock 與 Web Audio 的可用性取決於瀏覽器；不支援時仍�
 
 ```bash
 npm run lint
+npm test
 npm run build
 ```

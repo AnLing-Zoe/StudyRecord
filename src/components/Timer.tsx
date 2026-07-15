@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StudyLog } from '../types';
+import { formatLocalDate } from '../date';
 import { 
   Play, 
   Pause, 
@@ -40,7 +41,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
   const [manualSubject, setManualSubject] = useState('國文');
   const [manualCustomSubject, setManualCustomSubject] = useState('');
   const [manualDuration, setManualDuration] = useState('');
-  const [manualDate, setManualDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [manualDate, setManualDate] = useState(() => formatLocalDate());
   const [manualNotes, setManualNotes] = useState('');
 
   // Refs for timers
@@ -199,7 +200,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
     const log: StudyLog = {
       id: Math.random().toString(36).substr(2, 9),
-      date: new Date().toISOString().split('T')[0],
+      date: formatLocalDate(),
       subject: finalSubject,
       duration: saveMinutes,
       notes: notes.trim(),
@@ -370,6 +371,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                 onClick={handleReset}
                 className="p-3 bg-natural-bg hover:bg-natural-light text-natural-text/50 hover:text-natural-text border border-natural-border rounded-full transition-ui cursor-pointer"
                 title="歸零"
+                aria-label="歸零計時器"
                 id="timer-reset-btn"
               >
                 <RotateCcw className="w-5 h-5" />
@@ -383,6 +385,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                     : 'bg-natural-primary text-white hover:bg-natural-primary/95'
                 }`}
                 id="timer-play-pause-btn"
+                aria-label={isPlaying ? '暫停計時' : '開始計時'}
               >
                 {isPlaying ? <Pause className="w-6 h-6 fill-white" /> : <Play className="w-6 h-6 fill-white ml-0.5" />}
               </button>
@@ -394,6 +397,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                   disabled={elapsedTime < 5}
                   className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 disabled:opacity-40 disabled:bg-natural-bg disabled:text-natural-text/40 rounded-full transition-ui cursor-pointer"
                   title="存檔此研讀段落"
+                  aria-label="儲存這段讀書時間"
                   id="timer-save-btn"
                 >
                   <Save className="w-5 h-5" />
@@ -402,7 +406,8 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                 <button
                   onClick={() => triggerSaveDialogue(25)}
                   className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 rounded-full transition-ui cursor-pointer"
-                  title="將蕃茄鐘存入記錄"
+                  title="將番茄鐘存入紀錄"
+                  aria-label="儲存番茄鐘紀錄"
                   id="pomo-save-btn"
                 >
                   <Save className="w-5 h-5" />

@@ -1,5 +1,6 @@
 import React from 'react';
 import { StudyLog } from '../types';
+import { formatLocalDate } from '../date';
 import { 
   BarChart, 
   Bar, 
@@ -34,7 +35,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
   const totalAllTimeHours = parseFloat((totalAllTimeMinutes / 60).toFixed(1));
 
   // Filter logs for Today
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate();
   const todayMinutes = logs
     .filter(log => log.date === todayStr)
     .reduce((sum, log) => sum + log.duration, 0);
@@ -53,7 +54,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(d);
       // Label in mm/dd
       const label = dateStr.slice(5).replace('-', '/');
       result.push({
@@ -212,6 +213,7 @@ export default function Stats({ logs, onDeleteLog }: StatsProps) {
                   onClick={() => handleDeleteLog(log.id, log.subject, log.duration)}
                   className="p-1.5 text-natural-text/40 hover:text-red-600 hover:bg-neutral-100 rounded-lg transition-ui cursor-pointer flex-shrink-0"
                   title="刪除"
+                  aria-label={`刪除「${log.subject}」讀書紀錄`}
                   id={`delete-log-${log.id}`}
                 >
                   <Trash2 className="w-3.5 h-3.5" />

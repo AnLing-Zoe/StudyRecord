@@ -14,8 +14,7 @@ import {
   TrendingUp, 
   Award, 
   Clock, 
-  Trash2, 
-  FileText,
+  Trash2,
   Calendar
 } from 'lucide-react';
 

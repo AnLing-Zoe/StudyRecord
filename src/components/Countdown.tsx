@@ -13,9 +13,9 @@ import {
 
 interface CountdownProps {
   exams: Exam[];
-  onAddExam: (exam: Exam) => void;
-  onDeleteExam: (id: string) => void;
-  onUpdateExam: (updatedExam: Exam) => void;
+  onAddExam: (exam: Exam) => Promise<boolean>;
+  onDeleteExam: (id: string) => Promise<boolean>;
+  onUpdateExam: (updatedExam: Exam) => Promise<boolean>;
 }
 
 export default function Countdown({ 
@@ -40,7 +40,7 @@ export default function Countdown({
     return daysUntil(dateString);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!examName.trim() || !examDate) return;
 
@@ -51,7 +51,7 @@ export default function Countdown({
       pinned: newPinned
     };
 
-    onAddExam(newExam);
+    if (!await onAddExam(newExam)) return;
     setExamName('');
     setExamDate('');
     setNewPinned(false);
@@ -59,7 +59,7 @@ export default function Countdown({
   };
 
   const handleDelete = (id: string, _name: string) => {
-    onDeleteExam(id);
+    void onDeleteExam(id);
   };
 
   const handleStartEdit = (exam: Exam) => {
@@ -69,14 +69,14 @@ export default function Countdown({
     setEditPinned(!!exam.pinned);
   };
 
-  const handleUpdateSave = (id: string) => {
+  const handleUpdateSave = async (id: string) => {
     if (!editName.trim() || !editDate) return;
-    onUpdateExam({
+    if (!await onUpdateExam({
       id,
       name: editName.trim(),
       date: editDate,
       pinned: editPinned
-    });
+    })) return;
     setEditingExamId(null);
   };
 
@@ -174,7 +174,7 @@ export default function Countdown({
                     </div>
 
                     <button
-                      onClick={() => onUpdateExam({ ...exam, pinned: false })}
+                      onClick={() => void onUpdateExam({ ...exam, pinned: false })}
                       className="text-white/60 hover:text-white p-1.5 hover:bg-white/10 rounded-xl transition-ui absolute top-3.5 right-3.5 cursor-pointer"
                       title="取消掛置"
                       aria-label={`取消掛置「${exam.name}」`}
@@ -381,7 +381,7 @@ export default function Countdown({
 
                   {/* Pin/Unpin rapid action button */}
                   <button
-                    onClick={() => onUpdateExam({ ...exam, pinned: !exam.pinned })}
+                    onClick={() => void onUpdateExam({ ...exam, pinned: !exam.pinned })}
                     className={`p-2 border rounded-xl transition-ui cursor-pointer shadow-sm ${
                       exam.pinned 
                         ? 'bg-natural-primary/10 border-natural-primary/25 text-natural-primary' 

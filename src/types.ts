@@ -6,22 +6,20 @@ export interface StudyLog {
   notes: string;
 }
 
-export interface StudyPlan {
-  id: string;
-  month: string; // YYYY-MM
-  subject: string;
-  targetHours: number;
-}
-
 export interface Exam {
   id: string;
   name: string;
   date: string; // YYYY-MM-DD
-  pinned?: boolean;
+  pinned: boolean;
+}
+
+export interface Subject {
+  id: string;
+  name: string;
 }
 
 export interface AppState {
   logs: StudyLog[];
-  plans: StudyPlan[];
+  subjects: Subject[];
   exams: Exam[];
 }

@@ -1,6 +1,6 @@
 {
-  "name": "Study Tracker",
-  "description": "Study hour tracker, monthly planner, and exam countdown integrated with Google Sheets",
+  "name": "StudyRecord",
+  "description": "Study log, subject manager, and exam countdown backed by Google Sheets",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }

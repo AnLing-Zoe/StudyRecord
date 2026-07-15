@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StudyLog } from '../types';
+import { StudyLog, Subject } from '../types';
 import { formatLocalDate } from '../date';
+import SubjectManager from './SubjectManager';
 import { 
   Play, 
   Pause, 
@@ -8,28 +9,25 @@ import {
   Save, 
   BookOpen, 
   Clock, 
-  Compass, 
-  ChevronRight, 
   CheckCircle,
-  HelpCircle,
   FileText
 } from 'lucide-react';
 
 interface TimerProps {
-  logs: StudyLog[];
-  onAddLog: (log: StudyLog) => void;
-  onDeleteLog: (id: string) => void;
+  subjects: Subject[];
+  onAddLog: (log: StudyLog) => Promise<boolean>;
+  onAddSubject: (subject: string) => Promise<boolean>;
+  onDeleteSubject: (id: string) => Promise<boolean>;
 }
 
-export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
+export default function Timer({ subjects, onAddLog, onAddSubject, onDeleteSubject }: TimerProps) {
   // Timer States
   const [timerMode, setTimerMode] = useState<'stopwatch' | 'pomodoro'>('stopwatch');
   const [isPlaying, setIsPlaying] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0); // in seconds
-  const [pomoMinutes, setPomoMinutes] = useState(25); // current setting
+  const pomoMinutes = 25;
   const [pomoTimeLeft, setPomoTimeLeft] = useState(25 * 60); // in seconds
-  const [activeSubject, setActiveSubject] = useState('國文');
-  const [customSubject, setCustomSubject] = useState('');
+  const [activeSubject, setActiveSubject] = useState('');
 
   // Recording Logs State
   const [notes, setNotes] = useState('');
@@ -38,8 +36,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
 
   // Manual Log State
   const [isManualMode, setIsManualMode] = useState(false);
-  const [manualSubject, setManualSubject] = useState('國文');
-  const [manualCustomSubject, setManualCustomSubject] = useState('');
+  const [manualSubject, setManualSubject] = useState('');
   const [manualDuration, setManualDuration] = useState('');
   const [manualDate, setManualDate] = useState(() => formatLocalDate());
   const [manualNotes, setManualNotes] = useState('');
@@ -51,7 +48,12 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
   const targetEndTimeRef = useRef<number | null>(null);
   const wakeLockRef = useRef<any>(null);
 
-  const subjectsPool = ['國文', '英文', '數學', '物理', '化學', '生物', '歷史', '地理', '程式設計', '專業科目', '其他'];
+  const subjectsPool = subjects.map((subject) => subject.name);
+
+  useEffect(() => {
+    if (!subjectsPool.includes(activeSubject)) setActiveSubject(subjectsPool[0] || '');
+    if (!subjectsPool.includes(manualSubject)) setManualSubject(subjectsPool[0] || '');
+  }, [subjects]);
 
   const playAlertSound = () => {
     try {
@@ -168,7 +170,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
     return `${pad(mins)}:${pad(secs)}`;
   };
 
-  const currentSubjectName = activeSubject === '其他' && customSubject.trim() ? customSubject.trim() : activeSubject;
+  const currentSubjectName = activeSubject;
 
   const handleStartPause = () => {
     setIsPlaying(!isPlaying);
@@ -194,9 +196,10 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
     triggerSaveDialogue(mins);
   };
 
-  const handleSaveModalSubmit = (e: React.FormEvent) => {
+  const handleSaveModalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalSubject = currentSubjectName;
+    if (!finalSubject) return;
 
     const log: StudyLog = {
       id: Math.random().toString(36).substr(2, 9),
@@ -206,7 +209,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
       notes: notes.trim(),
     };
 
-    onAddLog(log);
+    if (!await onAddLog(log)) return;
     setNotes('');
     setShowSaveModal(false);
     setElapsedTime(0);
@@ -214,10 +217,15 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
   };
 
   // Manual logging submit
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalSubject = manualSubject === '其他' && manualCustomSubject.trim() ? manualCustomSubject.trim() : manualSubject;
+    const finalSubject = manualSubject;
     const durMins = parseInt(manualDuration);
+
+    if (!finalSubject) {
+      alert('請先在科目維護中新增讀書科目。');
+      return;
+    }
 
     if (isNaN(durMins) || durMins <= 0) {
       alert('請輸入有效的讀書時數。');
@@ -232,10 +240,9 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
       notes: manualNotes.trim(),
     };
 
-    onAddLog(log);
+    if (!await onAddLog(log)) return;
     setManualDuration('');
     setManualNotes('');
-    setManualCustomSubject('');
     setIsManualMode(false);
   };
 
@@ -309,7 +316,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                 <span>正在研讀科目</span>
               </label>
               <div className="grid grid-cols-4 gap-1.5" id="subject-switches">
-                {subjectsPool.slice(0, 8).map((sub) => (
+                {subjectsPool.map((sub) => (
                   <button
                     key={sub}
                     onClick={() => setActiveSubject(sub)}
@@ -323,30 +330,9 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                   </button>
                 ))}
               </div>
-
-              {/* Subject selector expand */}
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setActiveSubject('其他')}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold border transition-ui cursor-pointer ${
-                    activeSubject === '其他' 
-                      ? 'bg-natural-primary border-natural-primary text-white shadow-md' 
-                      : 'bg-natural-bg border-natural-border text-natural-text/70'
-                  }`}
-                >
-                  其他自編
-                </button>
-                {activeSubject === '其他' && (
-                  <input
-                    type="text"
-                    required
-                    placeholder="輸入自編科目名稱"
-                    value={customSubject}
-                    onChange={(e) => setCustomSubject(e.target.value)}
-                    className="flex-1 bg-white border border-natural-border rounded-xl px-3 py-1.5 text-xs text-natural-text placeholder-natural-text/40 focus:outline-none focus:border-natural-primary"
-                  />
-                )}
-              </div>
+              {subjectsPool.length === 0 && (
+                <p className="text-xs text-amber-700">請先在下方科目維護新增讀書科目。</p>
+              )}
             </div>
 
             {/* Notes / Remarks Field under the stopwatch */}
@@ -394,7 +380,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
               {timerMode === 'stopwatch' ? (
                 <button
                   onClick={handleStopwatchSave}
-                  disabled={elapsedTime < 5}
+                  disabled={elapsedTime < 5 || !activeSubject}
                   className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 disabled:opacity-40 disabled:bg-natural-bg disabled:text-natural-text/40 rounded-full transition-ui cursor-pointer"
                   title="存檔此研讀段落"
                   aria-label="儲存這段讀書時間"
@@ -405,6 +391,7 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
               ) : (
                 <button
                   onClick={() => triggerSaveDialogue(25)}
+                  disabled={!activeSubject}
                   className="p-3 bg-natural-primary/10 hover:bg-natural-primary text-natural-primary hover:text-white border border-natural-primary/20 rounded-full transition-ui cursor-pointer"
                   title="將番茄鐘存入紀錄"
                   aria-label="儲存番茄鐘紀錄"
@@ -429,27 +416,18 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
                 <span>讀書科目</span>
               </label>
               <select
+                required
                 value={manualSubject}
                 onChange={(e) => setManualSubject(e.target.value)}
                 className="w-full bg-white border border-natural-border text-natural-text px-4 py-3 rounded-2xl text-xs focus:outline-none focus:border-natural-primary font-medium"
               >
+                {subjectsPool.length === 0 && <option value="">請先新增科目</option>}
                 {subjectsPool.map((sub) => (
                   <option key={sub} value={sub}>
                      {sub}
                   </option>
                 ))}
               </select>
-
-              {manualSubject === '其他' && (
-                <input
-                  type="text"
-                  required
-                  placeholder="請輸入科目名稱"
-                  value={manualCustomSubject}
-                  onChange={(e) => setManualCustomSubject(e.target.value)}
-                  className="w-full bg-white border border-natural-border text-natural-text px-4 py-3 rounded-2xl text-xs focus:outline-none focus:border-natural-primary mt-2"
-                />
-              )}
             </div>
 
             {/* Date */}
@@ -499,6 +477,12 @@ export default function Timer({ logs, onAddLog, onDeleteLog }: TimerProps) {
           </button>
         </form>
       )}
+
+      <SubjectManager
+        subjects={subjects}
+        onAddSubject={onAddSubject}
+        onDeleteSubject={onDeleteSubject}
+      />
 
       {/* SAVE RECORD NOTE MODAL */}
       {showSaveModal && (

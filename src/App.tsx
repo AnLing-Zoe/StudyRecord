@@ -1,85 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
-import { BrainCircuit, Calendar, Clock, Home, Info } from 'lucide-react';
-import { AppState, Exam, StudyLog, StudyPlan } from './types';
+import { BrainCircuit, Calendar, Clock, Home, Info, RefreshCw } from 'lucide-react';
+import { mutateData, loadData } from './api';
+import { AppState, Exam, StudyLog } from './types';
 import Countdown from './components/Countdown';
 import Stats from './components/Stats';
 import Timer from './components/Timer';
-import { formatLocalDate, formatLocalMonth } from './date';
 
 type ActiveTab = 'dashboard' | 'timer' | 'planner';
 type ToastType = 'success' | 'info' | 'error';
 
-const today = () => formatLocalDate();
-const thisMonth = () => formatLocalMonth();
-
-const createInitialState = (): AppState => ({
-  logs: [
-    {
-      id: 'sample-log-1',
-      date: today(),
-      subject: '數學',
-      duration: 45,
-      notes: '範例讀書紀錄',
-    },
-    {
-      id: 'sample-log-2',
-      date: today(),
-      subject: '英文',
-      duration: 60,
-      notes: '複習單字',
-    },
-  ],
-  plans: [
-    {
-      id: 'sample-plan-1',
-      month: thisMonth(),
-      subject: '數學',
-      targetHours: 20,
-    },
-    {
-      id: 'sample-plan-2',
-      month: thisMonth(),
-      subject: '英文',
-      targetHours: 35,
-    },
-  ],
-  exams: [
-    {
-      id: 'sample-exam-1',
-      name: '模擬考',
-      date: (() => {
-        const date = new Date();
-        date.setDate(date.getDate() + 35);
-        return formatLocalDate(date);
-      })(),
-      pinned: true,
-    },
-  ],
-});
-
-const readStoredState = (): AppState => {
-  const savedLogs = localStorage.getItem('study_tracker_logs');
-  const savedPlans = localStorage.getItem('study_tracker_plans');
-  const savedExams = localStorage.getItem('study_tracker_exams');
-  const initialState = createInitialState();
-
-  return {
-    logs: savedLogs ? JSON.parse(savedLogs) : initialState.logs,
-    plans: savedPlans ? JSON.parse(savedPlans) : initialState.plans,
-    exams: savedExams ? JSON.parse(savedExams) : initialState.exams,
-  };
-};
+const emptyState: AppState = { logs: [], subjects: [], exams: [] };
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
-  const [appState, setAppState] = useState<AppState>(readStoredState);
+  const [appState, setAppState] = useState<AppState>(emptyState);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<ToastType>('info');
   const toastTimeoutRef = useRef<number | null>(null);
 
-  const triggerToast = (msg: string, type: ToastType = 'info') => {
+  const triggerToast = (message: string, type: ToastType = 'info') => {
     if (toastTimeoutRef.current !== null) window.clearTimeout(toastTimeoutRef.current);
-    setToastMessage(msg);
+    setToastMessage(message);
     setToastType(type);
     toastTimeoutRef.current = window.setTimeout(() => {
       setToastMessage(null);
@@ -87,63 +30,60 @@ export default function App() {
     }, 4500);
   };
 
-  useEffect(() => () => {
-    if (toastTimeoutRef.current !== null) window.clearTimeout(toastTimeoutRef.current);
+  const refresh = async () => {
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      setAppState(await loadData());
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : '無法讀取 Google Sheets。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void refresh();
+    return () => {
+      if (toastTimeoutRef.current !== null) window.clearTimeout(toastTimeoutRef.current);
+    };
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('study_tracker_logs', JSON.stringify(appState.logs));
-  }, [appState.logs]);
-
-  useEffect(() => {
-    localStorage.setItem('study_tracker_plans', JSON.stringify(appState.plans));
-  }, [appState.plans]);
-
-  useEffect(() => {
-    localStorage.setItem('study_tracker_exams', JSON.stringify(appState.exams));
-  }, [appState.exams]);
-
-  const handleAddLog = (newLog: StudyLog) => {
-    const updatedLogs = [newLog, ...appState.logs];
-    setAppState((prev) => ({ ...prev, logs: updatedLogs }));
-    triggerToast(`已儲存「${newLog.subject}」讀書紀錄。`, 'success');
+  const mutate = async (
+    action: Parameters<typeof mutateData>[0],
+    payload: Parameters<typeof mutateData>[1],
+    successMessage: string,
+  ) => {
+    try {
+      setAppState(await mutateData(action, payload));
+      triggerToast(successMessage, 'success');
+      return true;
+    } catch (error) {
+      triggerToast(error instanceof Error ? error.message : 'Google Sheets 操作失敗。', 'error');
+      return false;
+    }
   };
 
-  const handleDeleteLog = (id: string) => {
-    const updatedLogs = appState.logs.filter((log) => log.id !== id);
-    setAppState((prev) => ({ ...prev, logs: updatedLogs }));
-    triggerToast('已刪除讀書紀錄。', 'info');
-  };
+  const handleAddLog = (log: StudyLog) =>
+    mutate('addLog', log, `已儲存「${log.subject}」讀書紀錄。`);
 
-  const handleAddPlan = (newPlan: StudyPlan) => {
-    const updatedPlans = [...appState.plans, newPlan];
-    setAppState((prev) => ({ ...prev, plans: updatedPlans }));
-    triggerToast(`已新增 ${newPlan.month}「${newPlan.subject}」計畫。`, 'success');
-  };
+  const handleDeleteLog = (id: string) =>
+    mutate('deleteLog', { id }, '已刪除讀書紀錄。');
 
-  const handleDeletePlan = (id: string) => {
-    const updatedPlans = appState.plans.filter((plan) => plan.id !== id);
-    setAppState((prev) => ({ ...prev, plans: updatedPlans }));
-    triggerToast('已刪除讀書計畫。', 'info');
-  };
+  const handleAddSubject = (subject: string) =>
+    mutate('addSubject', { subject }, `已新增「${subject}」科目。`);
 
-  const handleAddExam = (newExam: Exam) => {
-    const updatedExams = [...appState.exams, newExam];
-    setAppState((prev) => ({ ...prev, exams: updatedExams }));
-    triggerToast(`已新增「${newExam.name}」倒數。`, 'success');
-  };
+  const handleDeleteSubject = (id: string) =>
+    mutate('deleteSubject', { id }, '已刪除讀書科目。');
 
-  const handleDeleteExam = (id: string) => {
-    const updatedExams = appState.exams.filter((exam) => exam.id !== id);
-    setAppState((prev) => ({ ...prev, exams: updatedExams }));
-    triggerToast('已刪除考試倒數。', 'info');
-  };
+  const handleAddExam = (exam: Exam) =>
+    mutate('addExam', exam, `已新增「${exam.name}」倒數。`);
 
-  const handleUpdateExam = (updatedExam: Exam) => {
-    const updatedExams = appState.exams.map((exam) => (exam.id === updatedExam.id ? updatedExam : exam));
-    setAppState((prev) => ({ ...prev, exams: updatedExams }));
-    triggerToast(`已更新「${updatedExam.name}」倒數。`, 'success');
-  };
+  const handleDeleteExam = (id: string) =>
+    mutate('deleteExam', { id }, '已刪除考試倒數。');
+
+  const handleUpdateExam = (exam: Exam) =>
+    mutate('updateExam', exam, `已更新「${exam.name}」倒數。`);
 
   return (
     <div className="min-h-screen bg-natural-bg font-sans text-natural-text flex flex-col items-center justify-center py-0 px-0 md:py-10 md:px-4" id="study-app-wrapper">
@@ -165,10 +105,25 @@ export default function App() {
               <span className="text-[9px] text-natural-text/60 block -mt-0.5 font-bold uppercase tracking-widest">StudyRecord</span>
             </div>
           </div>
-
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            className="p-2 rounded-xl text-natural-text/50 hover:text-natural-primary hover:bg-natural-primary/5 transition-ui cursor-pointer"
+            aria-label="重新載入 Google Sheets 資料"
+            title="重新載入資料"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
         </header>
 
         <main className="flex-1 overflow-y-auto px-5.5 py-5 no-scrollbar bg-natural-card pb-24" id="view-viewport">
+          {loadError && (
+            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs text-red-700" role="alert">
+              <p className="font-bold">無法連線 Google Sheets</p>
+              <p className="mt-1 break-words">{loadError}</p>
+            </div>
+          )}
+
           {activeTab === 'dashboard' && (
             <div className="space-y-5 animate-view" id="dashboard-tab">
               <Stats logs={appState.logs} onDeleteLog={handleDeleteLog} />
@@ -176,7 +131,12 @@ export default function App() {
           )}
 
           {activeTab === 'timer' && (
-            <Timer logs={appState.logs} onAddLog={handleAddLog} onDeleteLog={handleDeleteLog} />
+            <Timer
+              subjects={appState.subjects}
+              onAddLog={handleAddLog}
+              onAddSubject={handleAddSubject}
+              onDeleteSubject={handleDeleteSubject}
+            />
           )}
 
           {activeTab === 'planner' && (
@@ -189,20 +149,17 @@ export default function App() {
               />
             </div>
           )}
-
         </main>
 
         {toastMessage && (
           <div className="absolute top-18 inset-x-5 z-50 flex justify-center pointer-events-none toast-enter" id="global-toast" role="status" aria-live="polite">
-            <div
-              className={`px-4 py-2.5 rounded-full shadow-md border text-xs flex items-center space-x-2 ${
-                toastType === 'success'
-                  ? 'bg-natural-primary border-natural-primary text-white'
-                  : toastType === 'error'
-                    ? 'bg-natural-secondary border-natural-secondary text-white'
-                    : 'bg-white border-natural-border text-natural-text'
-              }`}
-            >
+            <div className={`px-4 py-2.5 rounded-full shadow-md border text-xs flex items-center space-x-2 ${
+              toastType === 'success'
+                ? 'bg-natural-primary border-natural-primary text-white'
+                : toastType === 'error'
+                  ? 'bg-red-600 border-red-600 text-white'
+                  : 'bg-white border-natural-border text-natural-text'
+            }`}>
               <Info className="w-3.5 h-3.5 flex-shrink-0" />
               <span>{toastMessage}</span>
             </div>
@@ -210,47 +167,28 @@ export default function App() {
         )}
 
         <footer className="absolute bottom-0 inset-x-0 px-4 py-3 pb-5 flex justify-around items-center z-40 rounded-none md:rounded-b-[38px]" id="tabbar-root" aria-label="主要導覽">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
-              activeTab === 'dashboard' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
-            }`}
-            id="tab-btn-dashboard"
-            aria-current={activeTab === 'dashboard' ? 'page' : undefined}
-          >
-            <Home className="w-5 h-5" />
-            <span className="text-[10px]">首頁</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('timer')}
-            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
-              activeTab === 'timer' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
-            }`}
-            id="tab-btn-timer"
-            aria-current={activeTab === 'timer' ? 'page' : undefined}
-          >
-            <Clock className="w-5 h-5" />
-            <span className="text-[10px]">計時</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('planner')}
-            className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
-              activeTab === 'planner' ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
-            }`}
-            id="tab-btn-planner"
-            aria-current={activeTab === 'planner' ? 'page' : undefined}
-          >
-            <Calendar className="w-5 h-5" />
-            <span className="text-[10px]">考程</span>
-          </button>
-
+          {([
+            ['dashboard', Home, '首頁'],
+            ['timer', Clock, '計時'],
+            ['planner', Calendar, '考程'],
+          ] as const).map(([tab, Icon, label]) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`tab-button flex flex-col items-center space-y-1 cursor-pointer ${
+                activeTab === tab ? 'text-natural-primary font-bold scale-103' : 'text-natural-text/50 hover:text-natural-primary'
+              }`}
+              aria-current={activeTab === tab ? 'page' : undefined}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px]">{label}</span>
+            </button>
+          ))}
         </footer>
       </div>
 
-      <div className="mt-4 hidden md:block text-natural-text/50 text-[11px] font-sans text-center max-w-[420px]" id="desktop-footer">
-        StudyRecord 的資料只儲存在目前瀏覽器中。
+      <div className="mt-4 hidden md:block text-natural-text/50 text-[11px] font-sans text-center max-w-[420px]">
+        資料由 Google Sheets 儲存與同步。
       </div>
     </div>
   );
